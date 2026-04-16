@@ -1,0 +1,221 @@
+# Registration Web App
+
+A simple Java Servlet + JSP web application for user registration, login, logout, and profile display.
+
+## Overview
+
+This project is a classic Java web application packaged as a WAR file and backed by MySQL.
+
+Main features:
+
+- User registration
+- User login
+- Session-based authentication
+- User profile display on home page
+- User logout
+
+Tech stack:
+
+- Java 8
+- Java Servlet API 4.0
+- JSP
+- Maven
+- MySQL 8
+- WAR packaging (deploy to a Servlet container like Apache Tomcat)
+
+## Project Structure
+
+```
+Registration/
+|- pom.xml
+|- registration_db.sql
+|- src/main/java/com/example/registration/
+|  |- DBConnection.java
+|  |- RegisterServlet.java
+|  |- LoginServlet.java
+|  |- LogoutServlet.java
+|  |- HelloServlet.java
+|  |- User.java
+|- src/main/webapp/
+|  |- index.jsp
+|  |- login.jsp
+|  |- home.jsp
+|  |- success.jsp
+|  |- WEB-INF/web.xml
+```
+
+## How It Works
+
+1. User opens the registration page.
+2. Registration form sends data to `POST /register`.
+3. On success, user is redirected to `success.jsp`.
+4. User logs in through `POST /login`.
+5. On valid credentials, user is stored in HTTP session and redirected to `home.jsp`.
+6. Logout form sends data to `POST /logout`, which invalidates session.
+
+## Prerequisites
+
+Install the following:
+
+- JDK 8 (project is compiled with source/target 8)
+- Maven 3.8+ (or use included Maven Wrapper)
+- MySQL 8+
+- Apache Tomcat 9 (recommended for Servlet 4.0)
+
+Verify tools:
+
+```bash
+java -version
+mvn -version
+mysql --version
+```
+
+## 1) Database Setup
+
+### Option A: Use provided SQL file (recommended)
+
+Run:
+
+```sql
+SOURCE registration_db.sql;
+```
+
+This creates:
+
+- database: `registration_db`
+- table: `users`
+
+### Option B: Create manually
+
+```sql
+CREATE DATABASE IF NOT EXISTS registration_db;
+USE registration_db;
+
+CREATE TABLE IF NOT EXISTS users (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(100) NOT NULL,
+	email VARCHAR(100) NOT NULL UNIQUE,
+	password VARCHAR(100) NOT NULL,
+	phone VARCHAR(20) NOT NULL
+);
+```
+
+## 2) Configure Database Credentials
+
+Credentials are currently hardcoded in `src/main/java/com/example/registration/DBConnection.java`:
+
+- URL: `jdbc:mysql://localhost:3306/registration_db`
+- USER: `root`
+- PASSWORD: `admin`
+
+If your local MySQL credentials differ, update that file before running.
+
+## 3) Build the Project
+
+From project root:
+
+### Windows (PowerShell / CMD)
+
+```bat
+mvnw.cmd clean package
+```
+
+### Linux / macOS / Git Bash
+
+```bash
+./mvnw clean package
+```
+
+Expected output:
+
+- WAR file under `target/` (for example `Registration-1.0-SNAPSHOT.war`)
+
+## 4) Deploy and Run
+
+### Option A: Deploy to local Tomcat (manual)
+
+1. Copy WAR from `target/` to your Tomcat `webapps/` directory.
+2. Start Tomcat.
+3. Open browser:
+
+```
+http://localhost:8080/Registration-1.0-SNAPSHOT/
+```
+
+If Tomcat expands with a different app name, use that context path.
+
+### Option B: Rename WAR for cleaner URL (optional)
+
+If you rename WAR to `registration.war` before deploying, app URL becomes:
+
+```
+http://localhost:8080/registration/
+```
+
+## Application Routes
+
+Configured in `src/main/webapp/WEB-INF/web.xml` and JSP forms:
+
+- `POST /register` -> create user
+- `POST /login` -> authenticate user
+- `POST /logout` -> invalidate session
+- `GET /index.jsp` -> registration page
+- `GET /login.jsp` -> login page
+- `GET /home.jsp` -> home/profile page
+- `GET /success.jsp` -> registration success page
+
+Welcome file is configured as `home.jsp`.
+
+## Quick Start (End-to-End)
+
+1. Start MySQL service.
+2. Create DB/table using `registration_db.sql`.
+3. Confirm credentials in `DBConnection.java`.
+4. Build with Maven Wrapper.
+5. Deploy WAR to Tomcat.
+6. Open app URL in browser.
+7. Register a user, then login.
+
+## Troubleshooting
+
+### Database connection failed
+
+- Ensure MySQL is running.
+- Ensure `registration_db` exists.
+- Ensure user/password in `DBConnection.java` are correct.
+- Ensure MySQL is reachable on `localhost:3306`.
+
+### Port 8080 already in use
+
+- Stop the process using port 8080, or
+- Change Tomcat HTTP port in `conf/server.xml`.
+
+### Login fails for valid user
+
+- Check if user record exists in `users` table.
+- Ensure exact password match (current implementation uses plain text comparison).
+
+## Current Limitations
+
+- Passwords are stored in plain text (not secure for production).
+- DB credentials are hardcoded in source code.
+- No input validation/sanitization layer beyond basic HTML constraints.
+- No role-based access control.
+
+## Recommended Improvements
+
+- Hash passwords with BCrypt.
+- Move DB config to environment variables or properties file.
+- Add server-side validation and centralized error handling.
+- Add integration tests and servlet unit tests.
+- Add logging framework (SLF4J + Logback) instead of `System.out.println`.
+
+## Development Notes
+
+- `RegisterServlet.init()` ensures table creation on startup.
+- Session key for logged-in user: `user`.
+- `HelloServlet` exists at `/hello-servlet` and can be used as a basic servlet check.
+
+## License
+
+Use and modify freely for learning and internal development.
