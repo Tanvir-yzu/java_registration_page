@@ -10,20 +10,9 @@ import java.sql.SQLException;
 
 public class RegisterServlet extends HttpServlet {
     @Override
-    public void init() throws ServletException {
-        super.init();
-        // Create users table if it doesn't exist
-        try {
-            DBConnection.createUsersTable();
-        } catch (SQLException e) {
-            System.out.println("Error creating users table: " + e.getMessage());
-            throw new ServletException("Failed to initialize database: " + e.getMessage(), e);
-        }
-    }
-
-    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
+            request.setCharacterEncoding("UTF-8");
             // Get form parameters
             String name = request.getParameter("name");
             String email = request.getParameter("email");
@@ -39,9 +28,11 @@ public class RegisterServlet extends HttpServlet {
             // Redirect to success page
             response.sendRedirect("success.jsp");
         } catch (SQLException e) {
-            System.out.println("Database error: " + e.getMessage());
-            // Database connection error
-            request.setAttribute("error", "Database connection failed: Please ensure MySQL is running and the database exists");
+            if (e.getMessage() != null && e.getMessage().toLowerCase().contains("duplicate")) {
+                request.setAttribute("error", "Email already exists. Please use another email.");
+            } else {
+                request.setAttribute("error", "Database error: Please ensure MySQL is running and the database exists");
+            }
             request.getRequestDispatcher("index.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();

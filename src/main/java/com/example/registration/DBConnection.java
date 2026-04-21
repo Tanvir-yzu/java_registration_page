@@ -6,11 +6,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DBConnection {
     private static final String URL = "jdbc:mysql://localhost:3306/registration_db";
     private static final String USER = "root";
     private static final String PASSWORD = "admin";
+    private static volatile boolean usersTableInitialized = false;
 
     static {
         try {
@@ -24,13 +27,25 @@ public class DBConnection {
     }
 
     public static Connection getConnection() throws SQLException {
-        System.out.println("Attempting to connect to database: " + URL);
         Connection connection = DriverManager.getConnection(URL, USER, PASSWORD);
-        System.out.println("Database connection established successfully");
+        ensureUsersTable(connection);
         return connection;
     }
 
-    public static void createUsersTable() throws SQLException {
+    private static void ensureUsersTable(Connection connection) throws SQLException {
+        if (usersTableInitialized) {
+            return;
+        }
+        synchronized (DBConnection.class) {
+            if (usersTableInitialized) {
+                return;
+            }
+            createUsersTable(connection);
+            usersTableInitialized = true;
+        }
+    }
+
+    private static void createUsersTable(Connection connection) throws SQLException {
         String createTableSQL = "CREATE TABLE IF NOT EXISTS users (" +
                 "id INT AUTO_INCREMENT PRIMARY KEY, " +
                 "name VARCHAR(100) NOT NULL, " +
@@ -38,10 +53,8 @@ public class DBConnection {
                 "password VARCHAR(100) NOT NULL, " +
                 "phone VARCHAR(20) NOT NULL)";
 
-        try (Connection connection = getConnection();
-             Statement statement = connection.createStatement()) {
+        try (Statement statement = connection.createStatement()) {
             statement.execute(createTableSQL);
-            System.out.println("Users table created successfully");
         }
     }
 
@@ -55,7 +68,6 @@ public class DBConnection {
             preparedStatement.setString(3, user.getPassword());
             preparedStatement.setString(4, user.getPhone());
             preparedStatement.executeUpdate();
-            System.out.println("User saved successfully");
         }
     }
 
@@ -63,28 +75,90 @@ public class DBConnection {
         String selectSQL = "SELECT * FROM users WHERE email = ?";
         User user = null;
 
-        System.out.println("Attempting to get user by email: " + email);
+        try (Connection connection = getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(selectSQL)) {
+            preparedStatement.setString(1, email);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    user = new User(
+                            resultSet.getInt("id"),
+                            resultSet.getString("name"),
+                            resultSet.getString("email"),
+                            resultSet.getString("password"),
+                            resultSet.getString("phone")
+                    );
+                }
+            }
+        }
+
+        return user;
+    }
+
+    public static User getUserById(int id) throws SQLException {
+        String selectSQL = "SELECT * FROM users WHERE id = ?";
+        User user = null;
 
         try (Connection connection = getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(selectSQL)) {
-            System.out.println("Database connection established");
-            preparedStatement.setString(1, email);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            preparedStatement.setInt(1, id);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    user = new User(
+                            resultSet.getInt("id"),
+                            resultSet.getString("name"),
+                            resultSet.getString("email"),
+                            resultSet.getString("password"),
+                            resultSet.getString("phone")
+                    );
+                }
+            }
+        }
 
-            if (resultSet.next()) {
-                user = new User(
+        return user;
+    }
+
+    public static List<User> getAllUsers() throws SQLException {
+        String selectSQL = "SELECT id, name, email, password, phone FROM users ORDER BY id DESC";
+        List<User> users = new ArrayList<>();
+
+        try (Connection connection = getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(selectSQL);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                users.add(new User(
                         resultSet.getInt("id"),
                         resultSet.getString("name"),
                         resultSet.getString("email"),
                         resultSet.getString("password"),
                         resultSet.getString("phone")
-                );
-                System.out.println("User found: " + user.getName());
-            } else {
-                System.out.println("User not found for email: " + email);
+                ));
             }
         }
 
-        return user;
+        return users;
+    }
+
+    public static boolean updateUser(User user) throws SQLException {
+        String updateSQL = "UPDATE users SET name = ?, email = ?, password = ?, phone = ? WHERE id = ?";
+
+        try (Connection connection = getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(updateSQL)) {
+            preparedStatement.setString(1, user.getName());
+            preparedStatement.setString(2, user.getEmail());
+            preparedStatement.setString(3, user.getPassword());
+            preparedStatement.setString(4, user.getPhone());
+            preparedStatement.setInt(5, user.getId());
+            return preparedStatement.executeUpdate() == 1;
+        }
+    }
+
+    public static boolean deleteUser(int id) throws SQLException {
+        String deleteSQL = "DELETE FROM users WHERE id = ?";
+
+        try (Connection connection = getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(deleteSQL)) {
+            preparedStatement.setInt(1, id);
+            return preparedStatement.executeUpdate() == 1;
+        }
     }
 }

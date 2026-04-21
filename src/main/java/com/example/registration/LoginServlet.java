@@ -13,35 +13,34 @@ public class LoginServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
+            request.setCharacterEncoding("UTF-8");
             // Get form parameters
             String email = request.getParameter("email");
             String password = request.getParameter("password");
 
-            System.out.println("Login attempt with email: " + email);
+            if (email == null || email.trim().isEmpty() || password == null) {
+                request.setAttribute("error", "Invalid email or password");
+                request.getRequestDispatcher("login.jsp").forward(request, response);
+                return;
+            }
 
             // Get user from database
             User user = DBConnection.getUserByEmail(email);
-
-            System.out.println("User retrieved: " + (user != null ? user.getName() : "null"));
 
             // Check if user exists and password matches
             if (user != null && user.getPassword().equals(password)) {
                 // Create session and store user information
                 HttpSession session = request.getSession();
                 session.setAttribute("user", user);
-                
-                System.out.println("Login successful for user: " + user.getName());
-                
+
                 // Redirect to home page
                 response.sendRedirect("home.jsp");
             } else {
                 // Invalid credentials
-                System.out.println("Invalid credentials for email: " + email);
                 request.setAttribute("error", "Invalid email or password");
                 request.getRequestDispatcher("login.jsp").forward(request, response);
             }
         } catch (SQLException e) {
-            System.out.println("Database error: " + e.getMessage());
             // Database connection error
             request.setAttribute("error", "Database connection failed: Please ensure MySQL is running and the database exists");
             request.getRequestDispatcher("login.jsp").forward(request, response);
