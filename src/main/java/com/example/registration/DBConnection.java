@@ -138,6 +138,62 @@ public class DBConnection {
         return users;
     }
 
+    public static List<User> searchUsers(String query) throws SQLException {
+        if (query == null) {
+            return getAllUsers();
+        }
+        String trimmed = query.trim();
+        if (trimmed.isEmpty()) {
+            return getAllUsers();
+        }
+
+        Integer id = null;
+        try {
+            id = Integer.parseInt(trimmed);
+        } catch (NumberFormatException ignored) {
+        }
+
+        String like = "%" + trimmed + "%";
+
+        String selectSQL;
+        if (id != null) {
+            selectSQL = "SELECT id, name, email, password, phone FROM users " +
+                    "WHERE id = ? OR name LIKE ? OR email LIKE ? OR phone LIKE ? " +
+                    "ORDER BY id DESC";
+        } else {
+            selectSQL = "SELECT id, name, email, password, phone FROM users " +
+                    "WHERE name LIKE ? OR email LIKE ? OR phone LIKE ? " +
+                    "ORDER BY id DESC";
+        }
+
+        List<User> users = new ArrayList<>();
+
+        try (Connection connection = getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(selectSQL)) {
+            int i = 1;
+            if (id != null) {
+                preparedStatement.setInt(i++, id);
+            }
+            preparedStatement.setString(i++, like);
+            preparedStatement.setString(i++, like);
+            preparedStatement.setString(i++, like);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    users.add(new User(
+                            resultSet.getInt("id"),
+                            resultSet.getString("name"),
+                            resultSet.getString("email"),
+                            resultSet.getString("password"),
+                            resultSet.getString("phone")
+                    ));
+                }
+            }
+        }
+
+        return users;
+    }
+
     public static boolean updateUser(User user) throws SQLException {
         String updateSQL = "UPDATE users SET name = ?, email = ?, password = ?, phone = ? WHERE id = ?";
 

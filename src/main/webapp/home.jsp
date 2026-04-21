@@ -162,6 +162,22 @@
         .btn.delete:hover {
             background: #da190b;
         }
+        .search-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .search-row input[type="text"] {
+            flex: 1;
+        }
+        .btn.secondary {
+            background: #666;
+            color: white;
+        }
+        .btn.secondary:hover {
+            background: #555;
+        }
     </style>
 </head>
 <body>
@@ -207,6 +223,18 @@
         <div class="crud-section" id="crud">
             <h2>User CRUD</h2>
 
+            <%
+                String q = request.getParameter("q");
+                if (q == null) {
+                    q = "";
+                }
+            %>
+            <form class="search-row" action="home.jsp#crud" method="get">
+                <input type="text" name="q" value="<%= q %>" placeholder="Search by id, name, email, or phone" />
+                <button class="btn secondary" type="submit">Search</button>
+                <a class="btn secondary" href="home.jsp#crud" style="text-decoration:none; display:inline-block;">Clear</a>
+            </form>
+
             <div class="crud-form">
                 <h3>Add New User</h3>
                 <form action="users" method="post">
@@ -235,7 +263,7 @@
                 List<User> users = null;
                 String usersError = null;
                 try {
-                    users = DBConnection.getAllUsers();
+                    users = DBConnection.searchUsers(q);
                 } catch (Exception ex) {
                     usersError = ex.getMessage();
                 }
