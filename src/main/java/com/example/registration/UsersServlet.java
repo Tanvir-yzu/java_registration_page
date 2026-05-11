@@ -10,8 +10,33 @@ import java.sql.SQLException;
 
 public class UsersServlet extends HttpServlet {
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.sendRedirect("home.jsp");
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        User sessionUser = session == null ? null : (User) session.getAttribute("user");
+        if (sessionUser == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        Integer id = parseIntOrNull(request.getParameter("id"));
+        if (id == null) {
+            response.sendRedirect("home.jsp");
+            return;
+        }
+
+        try {
+            User selectedUser = DBConnection.getUserById(id);
+            if (selectedUser == null) {
+                setFlashError(session, "User not found.");
+                response.sendRedirect("home.jsp");
+                return;
+            }
+            request.setAttribute("selectedUser", selectedUser);
+            request.getRequestDispatcher("show.jsp").forward(request, response);
+        } catch (SQLException e) {
+            setFlashError(session, "Database error. Please ensure MySQL is running and the database exists.");
+            response.sendRedirect("home.jsp");
+        }
     }
 
     @Override

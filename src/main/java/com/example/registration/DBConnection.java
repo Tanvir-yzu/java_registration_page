@@ -6,80 +6,133 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class DBConnection {
-    private static final String URL = "jdbc:mysql://localhost:3306/registration_db";
-    private static final String USER = "root";
+
+    // =====================================================
+    // DATABASE CONFIGURATION
+    // =====================================================
+    private static final String URL      = "jdbc:mysql://localhost:3306/registration_db";
+    private static final String USER     = "root";
     private static final String PASSWORD = "admin";
+
     private static volatile boolean usersTableInitialized = false;
 
+
+    // =====================================================
+    // STATIC BLOCK → LOAD MYSQL DRIVER
+    // =====================================================
     static {
         try {
             // Explicitly load the MySQL driver
             Class.forName("com.mysql.cj.jdbc.Driver");
             System.out.println("MySQL driver loaded successfully");
+
         } catch (ClassNotFoundException e) {
+
             System.out.println("Error loading MySQL driver: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
+
+    // =====================================================
+    // GET DATABASE CONNECTION
+    // =====================================================
     public static Connection getConnection() throws SQLException {
+
         Connection connection = DriverManager.getConnection(URL, USER, PASSWORD);
+
         ensureUsersTable(connection);
+
         return connection;
     }
 
+
+    // =====================================================
+    // ENSURE TABLE EXISTS (THREAD SAFE)
+    // =====================================================
     private static void ensureUsersTable(Connection connection) throws SQLException {
+
         if (usersTableInitialized) {
             return;
         }
+
         synchronized (DBConnection.class) {
+
             if (usersTableInitialized) {
                 return;
             }
+
             createUsersTable(connection);
             usersTableInitialized = true;
         }
     }
 
+
+    // =====================================================
+    // CREATE USERS TABLE
+    // =====================================================
     private static void createUsersTable(Connection connection) throws SQLException {
-        String createTableSQL = "CREATE TABLE IF NOT EXISTS users (" +
-                "id INT AUTO_INCREMENT PRIMARY KEY, " +
-                "name VARCHAR(100) NOT NULL, " +
-                "email VARCHAR(100) NOT NULL UNIQUE, " +
-                "password VARCHAR(100) NOT NULL, " +
-                "phone VARCHAR(20) NOT NULL)";
+
+        String createTableSQL =
+                "CREATE TABLE IF NOT EXISTS users (" +
+                        "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                        "name VARCHAR(100) NOT NULL, " +
+                        "email VARCHAR(100) NOT NULL UNIQUE, " +
+                        "password VARCHAR(100) NOT NULL, " +
+                        "phone VARCHAR(20) NOT NULL)";
 
         try (Statement statement = connection.createStatement()) {
+
             statement.execute(createTableSQL);
         }
     }
 
-    public static void saveUser(User user) throws SQLException {
-        String insertSQL = "INSERT INTO users (name, email, password, phone) VALUES (?, ?, ?, ?)";
 
-        try (Connection connection = getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(insertSQL)) {
+    // =====================================================
+    // SAVE USER
+    // =====================================================
+    public static void saveUser(User user) throws SQLException {
+
+        String insertSQL =
+                "INSERT INTO users (name, email, password, phone) VALUES (?, ?, ?, ?)";
+
+        try (
+                Connection connection = getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(insertSQL)
+        ) {
             preparedStatement.setString(1, user.getName());
             preparedStatement.setString(2, user.getEmail());
             preparedStatement.setString(3, user.getPassword());
             preparedStatement.setString(4, user.getPhone());
+
             preparedStatement.executeUpdate();
         }
     }
 
+
+    // =====================================================
+    // GET USER BY EMAIL
+    // =====================================================
     public static User getUserByEmail(String email) throws SQLException {
+
         String selectSQL = "SELECT * FROM users WHERE email = ?";
         User user = null;
 
-        try (Connection connection = getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(selectSQL)) {
+        try (
+                Connection connection = getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(selectSQL)
+        ) {
             preparedStatement.setString(1, email);
+
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
                 if (resultSet.next()) {
+
                     user = new User(
                             resultSet.getInt("id"),
                             resultSet.getString("name"),
@@ -94,15 +147,25 @@ public class DBConnection {
         return user;
     }
 
+
+    // =====================================================
+    // GET USER BY ID
+    // =====================================================
     public static User getUserById(int id) throws SQLException {
+
         String selectSQL = "SELECT * FROM users WHERE id = ?";
         User user = null;
 
-        try (Connection connection = getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(selectSQL)) {
+        try (
+                Connection connection = getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(selectSQL)
+        ) {
             preparedStatement.setInt(1, id);
+
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
                 if (resultSet.next()) {
+
                     user = new User(
                             resultSet.getInt("id"),
                             resultSet.getString("name"),
@@ -117,37 +180,57 @@ public class DBConnection {
         return user;
     }
 
+
+    // =====================================================
+    // GET ALL USERS
+    // =====================================================
     public static List<User> getAllUsers() throws SQLException {
-        String selectSQL = "SELECT id, name, email, password, phone FROM users ORDER BY id DESC";
+
+        String selectSQL =
+                "SELECT id, name, email, password, phone FROM users ORDER BY id DESC";
+
         List<User> users = new ArrayList<>();
 
-        try (Connection connection = getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(selectSQL);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
+        try (
+                Connection connection = getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(selectSQL);
+                ResultSet resultSet = preparedStatement.executeQuery()
+        ) {
             while (resultSet.next()) {
-                users.add(new User(
-                        resultSet.getInt("id"),
-                        resultSet.getString("name"),
-                        resultSet.getString("email"),
-                        resultSet.getString("password"),
-                        resultSet.getString("phone")
-                ));
+
+                users.add(
+                        new User(
+                                resultSet.getInt("id"),
+                                resultSet.getString("name"),
+                                resultSet.getString("email"),
+                                resultSet.getString("password"),
+                                resultSet.getString("phone")
+                        )
+                );
             }
         }
 
         return users;
     }
 
+
+    // =====================================================
+    // SEARCH USERS
+    // =====================================================
     public static List<User> searchUsers(String query) throws SQLException {
+
         if (query == null) {
             return getAllUsers();
         }
+
         String trimmed = query.trim();
+
         if (trimmed.isEmpty()) {
             return getAllUsers();
         }
 
         Integer id = null;
+
         try {
             id = Integer.parseInt(trimmed);
         } catch (NumberFormatException ignored) {
@@ -156,37 +239,51 @@ public class DBConnection {
         String like = "%" + trimmed + "%";
 
         String selectSQL;
+
         if (id != null) {
-            selectSQL = "SELECT id, name, email, password, phone FROM users " +
-                    "WHERE id = ? OR name LIKE ? OR email LIKE ? OR phone LIKE ? " +
-                    "ORDER BY id DESC";
+
+            selectSQL =
+                    "SELECT id, name, email, password, phone FROM users " +
+                            "WHERE id = ? OR name LIKE ? OR email LIKE ? OR phone LIKE ? " +
+                            "ORDER BY id DESC";
+
         } else {
-            selectSQL = "SELECT id, name, email, password, phone FROM users " +
-                    "WHERE name LIKE ? OR email LIKE ? OR phone LIKE ? " +
-                    "ORDER BY id DESC";
+
+            selectSQL =
+                    "SELECT id, name, email, password, phone FROM users " +
+                            "WHERE name LIKE ? OR email LIKE ? OR phone LIKE ? " +
+                            "ORDER BY id DESC";
         }
 
         List<User> users = new ArrayList<>();
 
-        try (Connection connection = getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(selectSQL)) {
+        try (
+                Connection connection = getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(selectSQL)
+        ) {
             int i = 1;
+
             if (id != null) {
                 preparedStatement.setInt(i++, id);
             }
+
             preparedStatement.setString(i++, like);
             preparedStatement.setString(i++, like);
             preparedStatement.setString(i++, like);
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
                 while (resultSet.next()) {
-                    users.add(new User(
-                            resultSet.getInt("id"),
-                            resultSet.getString("name"),
-                            resultSet.getString("email"),
-                            resultSet.getString("password"),
-                            resultSet.getString("phone")
-                    ));
+
+                    users.add(
+                            new User(
+                                    resultSet.getInt("id"),
+                                    resultSet.getString("name"),
+                                    resultSet.getString("email"),
+                                    resultSet.getString("password"),
+                                    resultSet.getString("phone")
+                            )
+                    );
                 }
             }
         }
@@ -194,26 +291,43 @@ public class DBConnection {
         return users;
     }
 
-    public static boolean updateUser(User user) throws SQLException {
-        String updateSQL = "UPDATE users SET name = ?, email = ?, password = ?, phone = ? WHERE id = ?";
 
-        try (Connection connection = getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(updateSQL)) {
+    // =====================================================
+    // UPDATE USER
+    // =====================================================
+    public static boolean updateUser(User user) throws SQLException {
+
+        String updateSQL =
+                "UPDATE users SET name = ?, email = ?, password = ?, phone = ? WHERE id = ?";
+
+        try (
+                Connection connection = getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(updateSQL)
+        ) {
             preparedStatement.setString(1, user.getName());
             preparedStatement.setString(2, user.getEmail());
             preparedStatement.setString(3, user.getPassword());
             preparedStatement.setString(4, user.getPhone());
             preparedStatement.setInt(5, user.getId());
+
             return preparedStatement.executeUpdate() == 1;
         }
     }
 
+
+    // =====================================================
+    // DELETE USER
+    // =====================================================
     public static boolean deleteUser(int id) throws SQLException {
+
         String deleteSQL = "DELETE FROM users WHERE id = ?";
 
-        try (Connection connection = getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(deleteSQL)) {
+        try (
+                Connection connection = getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(deleteSQL)
+        ) {
             preparedStatement.setInt(1, id);
+
             return preparedStatement.executeUpdate() == 1;
         }
     }

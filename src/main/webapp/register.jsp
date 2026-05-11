@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>User Login</title>
+    <title>User Registration Form</title>
     <style>
         * {
             box-sizing: border-box;
@@ -34,6 +34,7 @@
             font-weight: bold;
             color: #555;
         }
+        input[type="text"],
         input[type="email"],
         input[type="password"] {
             width: 100%;
@@ -67,6 +68,7 @@
         a {
             color: #4CAF50;
             text-decoration: none;
+            font-weight: bold;
         }
         a:hover {
             text-decoration: underline;
@@ -83,11 +85,15 @@
 </head>
 <body>
     <div class="container">
-        <h1>User Login</h1>
+        <h1>User Registration</h1>
         <% if (request.getAttribute("error") != null) { %>
             <div class="error"><%= request.getAttribute("error") %></div>
         <% } %>
-        <form action="login" method="post">
+        <form action="register" method="post">
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
             <div class="form-group">
                 <label for="email">Email:</label>
                 <input type="email" id="email" name="email" required>
@@ -96,10 +102,14 @@
                 <label for="password">Password:</label>
                 <input type="password" id="password" name="password" required>
             </div>
-            <input type="submit" value="Login">
+            <div class="form-group">
+                <label for="phone">Phone:</label>
+                <input type="text" id="phone" name="phone" required>
+            </div>
+            <input type="submit" value="Register">
         </form>
         <div class="link">
-            <p>Don't have an account? <a href="register.jsp">Register here</a></p>
+            <p>Already have an account? <a href="login.jsp">Login here</a></p>
         </div>
     </div>
 </body>

@@ -7,6 +7,9 @@
 <head>
     <title>Home Page</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
@@ -162,6 +165,18 @@
         .btn.delete:hover {
             background: #da190b;
         }
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+        table input[type="text"],
+        table input[type="email"],
+        table input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
         .search-row {
             display: flex;
             gap: 10px;
@@ -174,9 +189,38 @@
         .btn.secondary {
             background: #666;
             color: white;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
         }
         .btn.secondary:hover {
             background: #555;
+        }
+        .btn.view {
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn.view:hover {
+            background: #45a049;
+        }
+        .actions-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        @media (max-width: 720px) {
+            body {
+                padding: 12px;
+            }
+            .container {
+                padding: 18px;
+            }
+            .search-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
         }
     </style>
 </head>
@@ -186,7 +230,7 @@
 
         <div class="nav">
             <a href="home.jsp">Home</a> |
-            <a href="index.jsp">Register</a> |
+            <a href="register.jsp">Register</a> |
             <a href="login.jsp">Login</a>
         </div>
 
@@ -232,7 +276,7 @@
             <form class="search-row" action="home.jsp#crud" method="get">
                 <input type="text" name="q" value="<%= q %>" placeholder="Search by id, name, email, or phone" />
                 <button class="btn secondary" type="submit">Search</button>
-                <a class="btn secondary" href="home.jsp#crud" style="text-decoration:none; display:inline-block;">Clear</a>
+                <a class="btn secondary" href="home.jsp#crud">Clear</a>
             </form>
 
             <div class="crud-form">
@@ -272,52 +316,57 @@
             <% if (usersError != null) { %>
                 <div class="flash error">Failed to load users: <%= usersError %></div>
             <% } else { %>
-                <table>
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Password</th>
-                        <th>Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <% for (User u : users) { %>
-                        <%
-                            String updateFormId = "updateForm" + u.getId();
-                        %>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
                         <tr>
-                            <td><%= u.getId() %></td>
-                            <td>
-                                <input type="text" name="name" value="<%= u.getName() %>" form="<%= updateFormId %>" required />
-                            </td>
-                            <td>
-                                <input type="email" name="email" value="<%= u.getEmail() %>" form="<%= updateFormId %>" required />
-                            </td>
-                            <td>
-                                <input type="text" name="phone" value="<%= u.getPhone() %>" form="<%= updateFormId %>" required />
-                            </td>
-                            <td>
-                                <input type="password" name="password" form="<%= updateFormId %>" placeholder="(leave blank to keep)" />
-                            </td>
-                            <td>
-                                <form id="<%= updateFormId %>" action="users" method="post">
-                                    <input type="hidden" name="action" value="update" />
-                                    <input type="hidden" name="id" value="<%= u.getId() %>" />
-                                    <button class="btn update" type="submit">Update</button>
-                                </form>
-                                <form action="users" method="post" style="margin-top: 8px;">
-                                    <input type="hidden" name="action" value="delete" />
-                                    <input type="hidden" name="id" value="<%= u.getId() %>" />
-                                    <button class="btn delete" type="submit">Delete</button>
-                                </form>
-                            </td>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Password</th>
+                            <th>Actions</th>
                         </tr>
-                    <% } %>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                        <% for (User u : users) { %>
+                            <%
+                                String updateFormId = "updateForm" + u.getId();
+                            %>
+                            <tr>
+                                <td><%= u.getId() %></td>
+                                <td>
+                                    <input type="text" name="name" value="<%= u.getName() %>" form="<%= updateFormId %>" required />
+                                </td>
+                                <td>
+                                    <input type="email" name="email" value="<%= u.getEmail() %>" form="<%= updateFormId %>" required />
+                                </td>
+                                <td>
+                                    <input type="text" name="phone" value="<%= u.getPhone() %>" form="<%= updateFormId %>" required />
+                                </td>
+                                <td>
+                                    <input type="password" name="password" form="<%= updateFormId %>" placeholder="(leave blank to keep)" />
+                                </td>
+                                <td>
+                                    <div class="actions-cell">
+                                        <form id="<%= updateFormId %>" action="users" method="post">
+                                            <input type="hidden" name="action" value="update" />
+                                            <input type="hidden" name="id" value="<%= u.getId() %>" />
+                                            <button class="btn update" type="submit">Update</button>
+                                        </form>
+                                        <a class="btn view" href="users?id=<%= u.getId() %>">View</a>
+                                        <form action="users" method="post">
+                                            <input type="hidden" name="action" value="delete" />
+                                            <input type="hidden" name="id" value="<%= u.getId() %>" />
+                                            <button class="btn delete" type="submit">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% } %>
+                        </tbody>
+                    </table>
+                </div>
             <% } %>
         </div>
 

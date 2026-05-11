@@ -4,6 +4,9 @@
 <head>
     <title>Registration Success</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
@@ -38,13 +41,21 @@
         a:hover {
             background-color: #45a049;
         }
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+            .container {
+                padding: 18px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Registration Successful!</h1>
         <p>Your account has been created successfully.</p>
-        <a href="index.jsp">Register Another User</a>
+        <a href="register.jsp">Register Another User</a>
         <br><br>
         <a href="login.jsp">Login to Your Account</a>
         <br><br>

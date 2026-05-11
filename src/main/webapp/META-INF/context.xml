@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+    <Resource
+            name="jdbc/PersonDB"
+            auth="Container"
+            type="javax.sql.DataSource"
+            factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
+            driverClassName="com.mysql.cj.jdbc.Driver"
+            url="jdbc:mysql://localhost:3306/registration_db?useUnicode=true&amp;characterEncoding=utf8&amp;serverTimezone=UTC"
+            username="root"
+            password="admin"
+            maxActive="20"
+            maxIdle="10"
+            maxWait="10000"
+            testOnBorrow="true"
+            validationQuery="SELECT 1"
+            removeAbandoned="true"
+            removeAbandonedTimeout="60"
+            logAbandoned="true"
+    />
+</Context>

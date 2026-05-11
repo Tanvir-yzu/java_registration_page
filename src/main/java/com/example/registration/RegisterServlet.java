@@ -33,12 +33,12 @@ public class RegisterServlet extends HttpServlet {
             } else {
                 request.setAttribute("error", "Database error: Please ensure MySQL is running and the database exists");
             }
-            request.getRequestDispatcher("index.jsp").forward(request, response);
+            request.getRequestDispatcher("register.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
             // Other errors
             request.setAttribute("error", "Registration failed: " + e.getMessage());
-            request.getRequestDispatcher("index.jsp").forward(request, response);
+            request.getRequestDispatcher("register.jsp").forward(request, response);
         }
     }
 }

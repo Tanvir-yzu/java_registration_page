@@ -1,9 +1,13 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>User Registration Form</title>
+    <title>Person Search</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
@@ -11,7 +15,7 @@
             padding: 20px;
         }
         .container {
-            max-width: 500px;
+            max-width: 520px;
             margin: 0 auto;
             background-color: white;
             padding: 30px;
@@ -27,20 +31,18 @@
         }
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
             font-weight: bold;
             color: #555;
         }
-        input[type="text"],
-        input[type="email"],
-        input[type="password"] {
+        input[type="number"] {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
             box-sizing: border-box;
         }
-        input[type="submit"] {
+        button[type="submit"] {
             width: 100%;
             padding: 10px;
             background-color: #4CAF50;
@@ -50,44 +52,40 @@
             cursor: pointer;
             font-size: 16px;
         }
-        input[type="submit"]:hover {
+        button[type="submit"]:hover {
             background-color: #45a049;
         }
         .error {
-            color: red;
-            font-size: 12px;
-            margin-top: 5px;
+            color: #b00020;
+            font-size: 13px;
+            margin: 10px 0 15px;
+            text-align: center;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+            .container {
+                padding: 18px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>User Registration</h1>
-        <% if (request.getAttribute("error") != null) { %>
-            <div class="error"><%= request.getAttribute("error") %></div>
-        <% } %>
-        <form action="register" method="post">
-            <div class="form-group">
-                <label for="name">Name:</label>
-                <input type="text" id="name" name="name" required>
-            </div>
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            <div class="form-group">
-                <label for="phone">Phone:</label>
-                <input type="text" id="phone" name="phone" required>
-            </div>
-            <input type="submit" value="Register">
-        </form>
-        <div class="link">
-            <p>Already have an account? <a href="login.jsp">Login here</a></p>
+<div class="container">
+    <h1>Search Person by ID</h1>
+
+    <c:if test="${not empty error}">
+        <div class="error"><c:out value="${error}" /></div>
+    </c:if>
+
+    <form action="${pageContext.request.contextPath}/query" method="post">
+        <div class="form-group">
+            <label for="personId">Person ID</label>
+            <input id="personId" name="personId" type="number" required min="1" step="1" inputmode="numeric" />
         </div>
-    </div>
+        <button type="submit">Search</button>
+    </form>
+</div>
 </body>
 </html>

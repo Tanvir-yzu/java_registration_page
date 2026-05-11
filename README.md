@@ -16,6 +16,7 @@ A modern, full-featured user registration and authentication web application bui
 - **Responsive Design** - Modern, mobile-friendly UI
 - **Error Handling** - Comprehensive error messages and validation
 - **Database Integration** - MySQL database with JDBC
+- **Person Lookup (MVC)** - JSP + Servlet + JavaBean + JNDI DataSource (search person by ID)
 
 ## 📋 Prerequisites
 
@@ -74,6 +75,12 @@ CREATE TABLE IF NOT EXISTS users (
 mysql -u root -p < registration_db.sql
 ```
 
+### Person Lookup (MVC) Database Setup
+
+```bash
+mysql -u root -p < persons.sql
+```
+
 ### Step 3: Configure Database Credentials
 
 Open `src/main/java/com/example/registration/DBConnection.java` and update the database credentials if needed:
@@ -122,6 +129,17 @@ mvnw.cmd clean package
    http://localhost:8080/registration/
    ```
 
+### Step 6: Configure JNDI DataSource (jdbc/PersonDB)
+
+- This project includes a Tomcat context file: `src/main/webapp/META-INF/context.xml`
+- Default settings:
+  - JNDI name: `jdbc/PersonDB`
+  - MySQL URL: `jdbc:mysql://localhost:3306/registration_db`
+  - Username: `root`
+  - Password: `admin`
+
+If your MySQL credentials/URL are different, edit `META-INF/context.xml` before building/deploying.
+
 ## 📁 Project Structure
 
 ```
@@ -142,7 +160,9 @@ Registration/
 │       │               ├── LogoutServlet.java       # Handles user logout
 │       │               └── HelloServlet.java        # Test servlet
 │       └── webapp/
-│           ├── index.jsp         # Registration page
+│           ├── index.jsp         # Person search page (MVC)
+│           ├── show.jsp          # Person result page (MVC)
+│           ├── register.jsp      # Registration page
 │           ├── login.jsp         # Login page
 │           ├── home.jsp          # Home/Dashboard page
 │           ├── success.jsp       # Registration success page
@@ -159,10 +179,29 @@ Registration/
 | `/register` | POST | Register a new user |
 | `/login` | POST | Authenticate user |
 | `/logout` | POST | End user session |
-| `index.jsp` | GET | Registration page |
+| `/query` | POST | Query person by ID (MVC) |
+| `index.jsp` | GET | Person search page (MVC) |
+| `show.jsp` | GET | Person details page (MVC, forwarded) |
+| `register.jsp` | GET | Registration page |
 | `login.jsp` | GET | Login page |
 | `home.jsp` | GET | Home/Dashboard page |
 | `success.jsp` | GET | Registration success page |
+
+## 🧪 Tests
+
+### Unit Tests (JUnit + Mockito)
+
+```bash
+./mvnw test
+```
+
+Unit tests include servlet tests for `QueryServlet` with mocked `DataSource`, `Connection`, `PreparedStatement`, and `ResultSet`.
+
+### Integration Test Checklist (Tomcat 9+)
+
+- UTF-8: create a row with non-English name, query by ID, verify it renders correctly
+- SQL injection protection: try `personId=1 OR 1=1` (should be rejected as invalid ID)
+- Connection leaks: send 100 sequential POSTs to `/query` and confirm Tomcat logs do not show open/abandoned connections
 
 ## 🎯 Usage Flow
 
