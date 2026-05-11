@@ -4,75 +4,12 @@
 <html>
 <head>
     <title>Person Search</title>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 520px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: bold;
-            color: #555;
-        }
-        input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button[type="submit"] {
-            width: 100%;
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button[type="submit"]:hover {
-            background-color: #45a049;
-        }
-        .error {
-            color: #b00020;
-            font-size: 13px;
-            margin: 10px 0 15px;
-            text-align: center;
-        }
-        @media (max-width: 600px) {
-            body {
-                padding: 12px;
-            }
-            .container {
-                padding: 18px;
-            }
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="assets/app.css" />
+    <script src="assets/app.js" defer></script>
 </head>
 <body>
-<div class="container">
+<div class="container narrow">
     <h1>Search Person by ID</h1>
 
     <c:if test="${not empty error}">

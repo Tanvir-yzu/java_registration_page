@@ -3,63 +3,23 @@
 <html>
 <head>
     <title>Registration Success</title>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        h1 {
-            color: #4CAF50;
-        }
-        p {
-            font-size: 18px;
-            color: #333;
-        }
-        a {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-        }
-        a:hover {
-            background-color: #45a049;
-        }
-        @media (max-width: 600px) {
-            body {
-                padding: 12px;
-            }
-            .container {
-                padding: 18px;
-            }
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="assets/app.css" />
+    <script src="assets/app.js" defer></script>
 </head>
 <body>
-    <div class="container">
+    <div class="container narrow center">
         <h1>Registration Successful!</h1>
         <p>Your account has been created successfully.</p>
-        <a href="register.jsp">Register Another User</a>
-        <br><br>
-        <a href="login.jsp">Login to Your Account</a>
-        <br><br>
-        <a href="home.jsp">Go to Home Page</a>
+        <div class="actions">
+            <a class="btn view" href="register.jsp">Register Another User</a>
+        </div>
+        <div class="actions">
+            <a class="btn secondary" href="login.jsp">Login to Your Account</a>
+        </div>
+        <div class="actions">
+            <a class="btn secondary" href="home.jsp">Go to Home Page</a>
+        </div>
     </div>
 </body>
 </html>

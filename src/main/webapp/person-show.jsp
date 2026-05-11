@@ -4,69 +4,9 @@
 <html>
 <head>
     <title>Person Details</title>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 720px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #eee;
-            padding: 12px;
-            text-align: left;
-        }
-        th {
-            width: 160px;
-            background: #f5f5f5;
-        }
-        .actions {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .actions a {
-            display: inline-block;
-            padding: 10px 14px;
-            background: #4CAF50;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-        }
-        .actions a:hover {
-            background: #45a049;
-        }
-        @media (max-width: 600px) {
-            body {
-                padding: 12px;
-            }
-            .container {
-                padding: 18px;
-            }
-            th {
-                width: 120px;
-            }
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="assets/app.css" />
+    <script src="assets/app.js" defer></script>
 </head>
 <body>
 <c:if test="${empty person}">
@@ -96,7 +36,7 @@
     </table>
 
     <div class="actions">
-        <a href="index.jsp">Back to search</a>
+        <a class="btn secondary" href="index.jsp">Back to search</a>
     </div>
 </div>
 </body>
