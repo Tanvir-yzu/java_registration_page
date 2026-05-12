@@ -1,7 +1,38 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ page import="com.example.registration.User" %>
 <%@ page import="com.example.registration.DBConnection" %>
+<%@ page import="com.example.registration.User" %>
 <%@ page import="java.util.List" %>
+<%!
+    private static String h(String s) {
+        if (s == null) {
+            return "";
+        }
+        StringBuilder out = new StringBuilder(s.length() + 16);
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            switch (c) {
+                case '&':
+                    out.append("&amp;");
+                    break;
+                case '<':
+                    out.append("&lt;");
+                    break;
+                case '>':
+                    out.append("&gt;");
+                    break;
+                case '"':
+                    out.append("&quot;");
+                    break;
+                case '\'':
+                    out.append("&#x27;");
+                    break;
+                default:
+                    out.append(c);
+            }
+        }
+        return out.toString();
+    }
+%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -17,7 +48,8 @@
         <div class="nav">
             <a href="home.jsp">Home</a> |
             <a href="register.jsp">Register</a> |
-            <a href="login.jsp">Login</a>
+            <a href="login.jsp">Login</a> |
+            <a href="bean-demo.jsp">Bean Demo</a>
         </div>
 
         <%
@@ -26,41 +58,56 @@
             if (flashSuccess != null) {
                 session.removeAttribute("flashSuccess");
         %>
-            <div class="flash success"><%= flashSuccess %></div>
+            <div class="flash success"><%= h(flashSuccess) %></div>
         <%
             }
             if (flashError != null) {
                 session.removeAttribute("flashError");
         %>
-            <div class="flash error"><%= flashError %></div>
+            <div class="flash error"><%= h(flashError) %></div>
         <%
             }
 
-            User user = (User) session.getAttribute("user");
-            if (user != null) {
+            User sessionUser = (User) session.getAttribute("user");
+            String q = request.getParameter("q");
+            if (q == null) {
+                q = "";
+            }
+            q = q.trim();
+            List<User> users = null;
+            String usersError = null;
+            if (sessionUser != null && sessionUser.getId() > 0) {
+                request.setAttribute("userBean", sessionUser);
+                try {
+                    users = DBConnection.searchUsers(q);
+                } catch (Exception ex) {
+                    usersError = ex.getMessage();
+                }
+                if (users == null && usersError == null) {
+                    users = java.util.Collections.emptyList();
+                }
+            }
         %>
+
+        <jsp:useBean id="userBean" class="com.example.registration.User" scope="request" />
+
+        <% if (sessionUser != null && sessionUser.getId() > 0) { %>
         <div class="welcome">
-            <h2>Hello, <%= user.getName() %>!</h2>
+            <h2>Hello, <jsp:getProperty name="userBean" property="name" />!</h2>
         </div>
 
         <div class="user-info">
             <h2>Your Profile</h2>
-            <p><strong>Name:</strong> <%= user.getName() %></p>
-            <p><strong>Email:</strong> <%= user.getEmail() %></p>
-            <p><strong>Phone:</strong> <%= user.getPhone() %></p>
+            <p><strong>Name:</strong> <jsp:getProperty name="userBean" property="name" /></p>
+            <p><strong>Email:</strong> <jsp:getProperty name="userBean" property="email" /></p>
+            <p><strong>Phone:</strong> <jsp:getProperty name="userBean" property="phone" /></p>
         </div>
 
         <div class="crud-section" id="crud">
             <h2>User CRUD</h2>
 
-            <%
-                String q = request.getParameter("q");
-                if (q == null) {
-                    q = "";
-                }
-            %>
             <form class="search-row" action="home.jsp#crud" method="get">
-                <input type="text" name="q" value="<%= q %>" placeholder="Search by id, name, email, or phone" />
+                <input type="text" name="q" value="<%= h(q) %>" placeholder="Search by id, name, email, or phone" />
                 <button class="btn secondary" type="submit">Search</button>
                 <a class="btn secondary" href="home.jsp#crud">Clear</a>
             </form>
@@ -89,16 +136,6 @@
                 </form>
             </div>
 
-            <%
-                List<User> users = null;
-                String usersError = null;
-                try {
-                    users = DBConnection.searchUsers(q);
-                } catch (Exception ex) {
-                    usersError = ex.getMessage();
-                }
-            %>
-
             <% if (usersError != null) { %>
                 <div class="flash error">Failed to load users: <%= usersError %></div>
             <% } else { %>
@@ -122,13 +159,13 @@
                             <tr>
                                 <td><%= u.getId() %></td>
                                 <td>
-                                    <input type="text" name="name" value="<%= u.getName() %>" form="<%= updateFormId %>" required />
+                                    <input type="text" name="name" value="<%= h(u.getName()) %>" form="<%= updateFormId %>" required />
                                 </td>
                                 <td>
-                                    <input type="email" name="email" value="<%= u.getEmail() %>" form="<%= updateFormId %>" required />
+                                    <input type="email" name="email" value="<%= h(u.getEmail()) %>" form="<%= updateFormId %>" required />
                                 </td>
                                 <td>
-                                    <input type="text" name="phone" value="<%= u.getPhone() %>" form="<%= updateFormId %>" required />
+                                    <input type="text" name="phone" value="<%= h(u.getPhone()) %>" form="<%= updateFormId %>" required />
                                 </td>
                                 <td>
                                     <input type="password" name="password" form="<%= updateFormId %>" placeholder="(leave blank to keep)" />

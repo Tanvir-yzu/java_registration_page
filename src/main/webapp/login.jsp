@@ -10,8 +10,9 @@
 <body>
     <div class="container narrow">
         <h1>User Login</h1>
-        <% if (request.getAttribute("error") != null) { %>
-            <div class="error"><%= request.getAttribute("error") %></div>
+        <jsp:useBean id="error" class="java.lang.String" scope="request" />
+        <% if (error != null && !error.isBlank()) { %>
+            <div class="error"><%= error %></div>
         <% } %>
         <form action="login" method="post">
             <div class="form-group">
